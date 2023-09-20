@@ -1,20 +1,20 @@
---the usual--
+--Previewing all columns in the dataset--
 SELECT  *
 FROM `bigquery-public-data.chicago_crime.crime`;
 
---checking if dupes present--
+--Checking for possible dupes present in the primary key--
 select
 count(distinct(case_number)) as Total_disctinct_cases,
 count(case_number) as Total_cases
 from `bigquery-public-data.chicago_crime.crime`;
 
---checking unique key for dupes--
+--Checking a unique constraint for dupes--
 select
 count(distinct(unique_key)) as total_distinct_keys,
 count(unique_key) as total_keys
 from`bigquery-public-data.chicago_crime.crime`;
 
---pulling the duplicate case numbers to examine them--
+--Examining the duplicate case numbers before deciding how to proceed--
 select * 
 from `bigquery-public-data.chicago_crime.crime`
 where case_number in (
@@ -25,13 +25,13 @@ where case_number in (
 ) 
 order by case_number;
 
---keeping what is necessary--
+--Creating a separate permannent table to continue with--
 create table chicago_criminal_data.chicago_crime_v2 as
 select distinct(case_number),block, date, primary_type,description, location_description,arrest, domestic
 from `bigquery-public-data.chicago_crime.crime`;
 
 
---querying to observe columns with null values--
+--Investigating all columns for Null values--
 SELECT  *
 FROM chicago_criminal_data.chicago_crime_v3
 where 
@@ -44,7 +44,7 @@ or location_description is null
 or arrest is null
 or domestic is null;
 
---cleaning null values--
+--Cleaning out the Null values--
 delete from `coursera-380912.chicago_criminal_data.chicago_crime_v2`
 where case_number is null;
 
@@ -56,7 +56,7 @@ select *
 from `coursera-380912.chicago_criminal_data.chicago_crime_v3`
 where case_number is null or new_location_description is null;
 
---separating datetime into date and time--
+--Separating datetime into date and time--
 create table chicago_criminal_data.chicago_crime_V4 as
 select case_number,primary_type,block,
 extract(date from date) as date,
@@ -67,7 +67,7 @@ from `chicago_criminal_data.chicago_crime_v3`;
 select *
 from `coursera-380912.chicago_criminal_data.chicago_crime_V4`;
 
---Preparing to split the Block column into a cleaner format by obseriving the fields in the Block column further--
+--Preparing to split the "block column" into a cleaner format by observing the fields in the Block column further--
 SELECT length_of_array,
 count (length_of_array) as Observations
 from(select
@@ -76,7 +76,7 @@ from `coursera-380912.chicago_criminal_data.chicago_crime_V4`)
 group by length_of_array
 order by length_of_array;
 
---some values of the "block" column do not have enough elements in the array to support offset(3)--
+--Some values of the "block" column do not have enough elements in the array to support offset(3)--
 
 SELECT
     case_number,
